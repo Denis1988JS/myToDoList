@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block main %}
+{% if request.user.is_authenticated %}
+<div class="row justify-content-center">
+	<div class="col-md-8">
+		<form action="{% url 'addTask' %}" method="post"  enctype="multipart/form-data">
+				<h2>Добавить задачу</h2>
+				{% csrf_token %}
+				{{form}}
+				{% if messages %}
+				{% for m in messages %}
+				<p class="text-center text-danger">{{m}}</p>
+				{% endfor %}
+				{% endif %}
+				<input type="submit" class="form-control">Добавить</input>
+				<input type="reset" class="form-control">Очистить форму</input>
+		</form>
+	</div>
+</div>
+<div class="row justify-content-center">
+	<div class="col-md-10 col-sm-10 ">
+		<h1 class="bg-success-subtle text-center gy-5">Список задач</h1>
+
+			<div class="accordion" id="accordionPanelsStayOpenExample">
+				{% if userTask %}
+				{% regroup userTask by dateCreate as userTask_list %}
+				{% for dateCreate in userTask_list %}
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="headingOne">
+					<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne"
+						aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+						Список задач на {{dateCreate.grouper}}
+					</button>
+					</h2>
+						{% for i in dateCreate.list %}
+						<div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show mb-2"
+							aria-labelledby="panelsStayOpen-headingOne">
+							<div class="accordion-body bg-light text-dark">
+								{% if i.status %}<p><del>{{i.title}} - {{i.content}}</del></p>
+								{% else %}<p>{{i.title}} - {{i.content}}</p>
+								{% endif %}
+								<div>
+									<p>Статуст - {% if i.status %} <span><del>Выполнена</del></span> {% else %}<span>Не Выполнена</span>{% endif %}</p>
+									<p>Дата выполнения до {{i.dateOfCompletion}}</p>
+								</div>
+							</div>
+							<div class="bg-light">
+								<a href="{% url 'changeStatusTask' i.id %}">
+									<button type="button" class="btn btn-secondary">Отметить как выполненное</button>
+								</a>
+								<a href="{% url 'deleteTask' i.id %}">
+									<button type="button" class="btn btn-warning">Удалить задачу</button>
+								</a>
+							</div>
+						</div>
+						{% endfor %}
+				</div>
+				{% endfor %}
+				{% else %}
+				<h1 class="text-center text-info">Задач на данный момент нет</h1>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<div class="row justify-content-center">
+		<div class="col-md-10 col-sm-10 ">
+			<h2 class="text-center text-success">{{message}}</h2>
+			<h3 class="text-center text-warning">Для работы с приложением - <a href="{% url 'login' %}">Авторизуйтесь</a>  или <a href="{% url 'register' %}">Зарегистрируйтесь</a> </h3>
+		</div>
+	</div>
+	{% endif %}
+
+{% endblock main %}
